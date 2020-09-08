@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    tools:context=".SplashScrean">
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:lottie_loop="false"
+        app:lottie_rawRes="@raw/splash_anim" />
+
+    <TextView
+        android:id="@+id/Splash_Text"
+        style="@style/TextAppearance.AppCompat.Body1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginHorizontal="5dp"
+        android:layout_marginBottom="20dp"
+        android:text="Spy Messenger"
+        android:textColor="@color/colorPrimaryDark"
+        android:textSize="35dp"
+        android:textStyle="bold" />
+
+</RelativeLayout>
