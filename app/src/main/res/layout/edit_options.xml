@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/editOptions"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#00FFFFFF"
+        android:drawableStart="@drawable/ic_baseline_account_circle_24"
+        android:drawablePadding="20dp"
+        android:elevation="5dp"
+        android:gravity="center_vertical"
+        android:onClick="setProfile"
+        android:padding="5dp"
+        android:text="Edit ProfilePic" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#00FFFFFF"
+        android:drawableStart="@drawable/ic_baseline_image_24"
+        android:drawablePadding="20dp"
+        android:elevation="5dp"
+        android:gravity="center_vertical"
+        android:onClick="setCover"
+        android:padding="5dp"
+        android:text="Edit CoverPic" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#00FFFFFF"
+        android:drawableStart="@drawable/ic_baseline_subtitles_24"
+        android:drawablePadding="20dp"
+        android:elevation="5dp"
+        android:gravity="center_vertical"
+        android:onClick="setStatus"
+        android:padding="5dp"
+        android:text="Edit Status" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#00FFFFFF"
+        android:drawableStart="@drawable/ic_baseline_school_24"
+        android:drawablePadding="20dp"
+        android:elevation="5dp"
+        android:gravity="center_vertical"
+        android:onClick="setEdu"
+        android:padding="5dp"
+        android:text="Edit education" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#00FFFFFF"
+        android:drawableStart="@drawable/ic_baseline_work_24"
+        android:drawablePadding="20dp"
+        android:elevation="5dp"
+        android:gravity="center_vertical"
+        android:onClick="setJob"
+        android:padding="5dp"
+        android:text="Edit job" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#00FFFFFF"
+        android:drawableStart="@drawable/ic_baseline_location_on_24"
+        android:drawablePadding="20dp"
+        android:elevation="5dp"
+        android:gravity="center_vertical"
+        android:onClick="setLoc"
+        android:padding="5dp"
+        android:text="Edit location" />
+
+
+</LinearLayout>

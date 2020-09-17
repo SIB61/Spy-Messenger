@@ -1,0 +1,33 @@
+ Change Layout BackGround from url or link ------------------------------------------------------------
+
+                 try {
+
+                    StrictMode.ThreadPolicy policy=new StrictMode.ThreadPolicy.Builder (  ).permitAll ().build ();
+                    StrictMode.setThreadPolicy ( policy );
+                    RelativeLayout layout=findViewById ( R.id.t );
+                    URL url=new URL ( documentSnapshot.getString ( "coverPic" )  );
+                    Bitmap bitmap= BitmapFactory.decodeStream ( url.openConnection ().getInputStream () );
+                    Drawable drawable=new BitmapDrawable ( bitmap );
+                    layout.setBackground ( drawable );
+
+                }
+                catch (IOException ex) {
+                    ex.printStackTrace ( );
+                }
+  --------------------------------------------------------------------------------------------------------
+
+  check and request permissions---------------------------------------------------------------------------
+              String[] PERMISSIONS_STORAGE = {
+                              Manifest.permission.READ_EXTERNAL_STORAGE,
+                              Manifest.permission.WRITE_EXTERNAL_STORAGE
+                      };
+
+                      if( ContextCompat.checkSelfPermission (this,PERMISSIONS_STORAGE[0])==PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission ( this,PERMISSIONS_STORAGE[1] )==PackageManager.PERMISSION_GRANTED)
+                      {
+                          //do your task
+                      }
+                      else
+                      {
+                        requestPermissions ( PERMISSIONS_STORAGE,1 );
+                      }
+   --------------------------------------------------------------------------------------------------------

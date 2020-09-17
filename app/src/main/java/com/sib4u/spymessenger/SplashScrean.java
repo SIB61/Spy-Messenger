@@ -27,15 +27,15 @@ public class SplashScrean extends AppCompatActivity {
         new Handler ( ).postDelayed ( new Runnable ( ) {
             @Override
             public void run() {
-                if ( user == null ) {
-                    startActivity ( new Intent ( SplashScrean.this, LoginActivity.class ) );
+                if ( user != null && user.isEmailVerified ( ) ) {
+                    startActivity ( new Intent ( SplashScrean.this, MainActivity.class ) );
                     finish ( );
                 } else {
-                    startActivity ( new Intent ( SplashScrean.this, MainActivity.class ) );
+                    startActivity ( new Intent ( SplashScrean.this, LoginActivity.class ) );
                     finish ( );
                 }
             }
-        }, 200 );
+        }, 400 );
 
     }
 }

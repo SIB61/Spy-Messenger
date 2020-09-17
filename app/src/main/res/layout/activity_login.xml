@@ -26,6 +26,7 @@
         android:padding="20dp">
 
         <EditText
+            android:layout_marginTop="5dp"
             android:id="@+id/LogInEmail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -66,6 +67,7 @@
             android:background="@drawable/triangle"
             android:elevation="10dp"
             android:onClick="logIn"
+            android:layout_marginBottom="5dp"
             android:text="Log in" />
 
     </LinearLayout>
