@@ -19,7 +19,7 @@ public class GeneralSettings extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 FirebaseAuth.getInstance ( ).signOut ( );
-                startActivity ( new Intent ( GeneralSettings.this, LoginActivity.class ).setFlags ( Intent.FLAG_ACTIVITY_CLEAR_TOP ) );
+                startActivity ( new Intent ( GeneralSettings.this, LoginActivity.class ).setFlags ( Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK ) );
             }
         } );
 

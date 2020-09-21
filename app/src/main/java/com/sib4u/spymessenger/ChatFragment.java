@@ -7,6 +7,11 @@ import android.view.ViewGroup;
 
 import androidx.fragment.app.Fragment;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link ChatFragment#newInstance} factory method to
@@ -27,18 +32,17 @@ public class ChatFragment extends Fragment {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment ChatFragment.
-     */
     // TODO: Rename and change types and number of parameters
     public static ChatFragment newInstance(String param1, String param2) {
         ChatFragment fragment = new ChatFragment ( );
         Bundle args = new Bundle ( );
+        List<Map<String, Object>> maps = new ArrayList<> ( );
+        Map<String, Object> map = new HashMap<> ( );
+        map.put ( "1", param1 );
+        map.put ( "2", param2 );
+        maps.add ( map );
+        List<List<String>> mapsd = new ArrayList<> ( );
+
         args.putString ( ARG_PARAM1, param1 );
         args.putString ( ARG_PARAM2, param2 );
         fragment.setArguments ( args );

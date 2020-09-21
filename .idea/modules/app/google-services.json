@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "662311231372",
+    "firebase_url": "https://spy-messenger-b8572.firebaseio.com",
+    "project_id": "spy-messenger-b8572",
+    "storage_bucket": "spy-messenger-b8572.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:662311231372:android:a8fcc0dc99eb0bbf12c0a9",
+        "android_client_info": {
+          "package_name": "com.sib4u.spymessenger"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "662311231372-b3tf4iali5patma4k7q577caspc7863v.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sib4u.spymessenger",
+            "certificate_hash": "78c6ca2126a9ad91def74cbedeb8476dd84c568c"
+          }
+        },
+        {
+          "client_id": "662311231372-ca4d82p7poeo7d2bsct49pnq2k9p677i.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDAz42uHRq7MWdtfmlDMR9oBDRHBIm-wM8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "662311231372-ca4d82p7poeo7d2bsct49pnq2k9p677i.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

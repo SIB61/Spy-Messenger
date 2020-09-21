@@ -1,46 +1,52 @@
 package com.sib4u.spymessenger;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link FriendsFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 public class FriendsFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    List<UserModel> userModels;
+    CollectionReference collectionReference;
+    FFAdapter adapter;
+    RecyclerView recyclerView;
+    List<String> list;
+    List<Map<String, Object>> mapList = new ArrayList<> ( );
+    FFAdapter.OnClick onClick = new FFAdapter.OnClick ( ) {
+        @Override
+        public void listener(int position, View view) {
+            startActivity ( new Intent ( getActivity ( ), FriendProfileActivity.class ).putExtra ( "map", (Serializable) mapList.get ( position ) ) );
+        }
+    };
 
     public FriendsFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment FriendsFragment.
-     */
+
     // TODO: Rename and change types and number of parameters
-    public static FriendsFragment newInstance(String param1, String param2) {
+    private ViewModel viewModel;
+
+    public static FriendsFragment newInstance(List<Map<String, Object>> list) {
+        Log.d ( "jhakanaka", "newInstance: " + list.toString ( ) );
         FriendsFragment fragment = new FriendsFragment ( );
         Bundle args = new Bundle ( );
-        args.putString ( ARG_PARAM1, param1 );
-        args.putString ( ARG_PARAM2, param2 );
+        args.putSerializable ( "maps", (Serializable) list );
         fragment.setArguments ( args );
         return fragment;
     }
@@ -48,16 +54,49 @@ public class FriendsFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate ( savedInstanceState );
+        // viewModel= ViewModelProviders.of ( this ).get ( ViewModel.class );
+
         if ( getArguments ( ) != null ) {
-            mParam1 = getArguments ( ).getString ( ARG_PARAM1 );
-            mParam2 = getArguments ( ).getString ( ARG_PARAM2 );
+            if ( getArguments ( ).containsKey ( "maps" ) ) {
+                mapList = (List<Map<String, Object>>) getArguments ( ).getSerializable ( "maps" );
+            }
+            if ( mapList != null ) {
+                Log.d ( "jhakanaka", "onCreateView: " + mapList.toString ( ) );
+            }
         }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate ( R.layout.fragment_friends, container, false );
+        View v = inflater.inflate ( R.layout.fragment_friends, container, false );
+
+
+        userModels = new ArrayList<> ( );
+        list = new ArrayList<> ( );
+        collectionReference = FirebaseFirestore.getInstance ( ).collection ( "Connections/" +
+                FirebaseAuth.getInstance ( ).getCurrentUser ( ).getUid ( ) + "/MyConnections" );
+        adapter = new FFAdapter ( getContext ( ), mapList );
+        recyclerView = v.findViewById ( R.id.FFRecyclerView );
+        recyclerView.setAdapter ( adapter );
+        adapter.setOnItemClickListener ( onClick );
+        Log.d ( "OnChanged", "onChanged: " + "hi there" );
+        //  mapList=viewModel.getFriendsMaps ().getValue ();
+      /*  viewModel.getFriendsMaps ().observe ( getViewLifecycleOwner ( ), new Observer<List<Map<String, Object>>> ( ) {
+            @Override
+            public void onChanged(List<Map<String, Object>> maps) {
+                mapList=maps;
+                adapter.notifyDataSetChanged ();
+                Log.d ( "OnChanged", "onChanged: "+maps.toString () );
+            }
+        } );*/
+        return v;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume ( );
+
+
     }
 }

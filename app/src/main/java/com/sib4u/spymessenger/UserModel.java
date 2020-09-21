@@ -2,18 +2,26 @@ package com.sib4u.spymessenger;
 
 public class UserModel {
 
-    String userId, profilePic, coverPic, name, status, education, job, location;
-    String[] a;
+    String userId, profilePic, name, status, education, job, location;
+    boolean visibility;
 
-    public UserModel(String userId, String profilePic, String coverPic, String name, String status, String education, String job, String location) {
+    public UserModel(String userId, String profilePic, String name, String status, String education, String job, String location, boolean visibility) {
         this.userId = userId;
         this.profilePic = profilePic;
-        this.coverPic = coverPic;
         this.name = name;
         this.status = status;
         this.education = education;
         this.job = job;
         this.location = location;
+        this.visibility = visibility;
+    }
+
+    public boolean isVisibility() {
+        return visibility;
+    }
+
+    public void setVisibility(boolean visibility) {
+        this.visibility = visibility;
     }
 
     public UserModel() {
@@ -33,14 +41,6 @@ public class UserModel {
 
     public void setProfilePic(String profilePic) {
         this.profilePic = profilePic;
-    }
-
-    public String getCoverPic() {
-        return coverPic;
-    }
-
-    public void setCoverPic(String coverPic) {
-        this.coverPic = coverPic;
     }
 
     public String getName() {
@@ -87,7 +87,6 @@ public class UserModel {
     public String toString() {
         return "UserModel{" +
                 "profilePic='" + profilePic + '\'' +
-                ", coverPic='" + coverPic + '\'' +
                 ", name='" + name + '\'' +
                 ", status='" + status + '\'' +
                 ", education='" + education + '\'' +

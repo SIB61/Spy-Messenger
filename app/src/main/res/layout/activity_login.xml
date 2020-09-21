@@ -4,74 +4,87 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".LoginActivity">
-
+<ScrollView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <LinearLayout
-        android:id="@+id/a"
         android:layout_width="match_parent"
-        android:layout_height="300dp"
-        android:background="@drawable/loginbg"
-        android:orientation="horizontal" />
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/a"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:background="@drawable/loginbg"
+            android:orientation="horizontal" />
 
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/a"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="-100dp"
-        android:background="@drawable/triangle"
-        android:elevation="20dp"
-        android:orientation="vertical"
-        android:padding="20dp">
-
-        <EditText
-            android:layout_marginTop="5dp"
-            android:id="@+id/LogInEmail"
+        <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/edittext"
-            android:drawableStart="@drawable/ic_baseline_email_24"
-            android:ems="12"
-            android:focusableInTouchMode="true"
-            android:hint="email"
-            android:inputType="textEmailAddress"
-            android:padding="7dp" />
-
-        <EditText
-            android:id="@+id/LogInPass"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/edittext"
-            android:drawableStart="@drawable/ic_baseline_vpn_key_24"
-            android:ems="12"
-            android:focusableInTouchMode="true"
-            android:hint="password"
-            android:inputType="textPassword"
-            android:padding="7dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="right"
-            android:layout_marginTop="10dp"
-            android:onClick="forgot"
-            android:text="forgot password" />
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="20dp"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/a"
+            android:layout_marginBottom="50dp"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="-100dp"
             android:background="@drawable/triangle"
-            android:elevation="10dp"
-            android:onClick="logIn"
-            android:layout_marginBottom="5dp"
-            android:text="Log in" />
+            android:elevation="20dp"
+            android:orientation="vertical"
+            android:padding="20dp">
 
+            <EditText
+                android:id="@+id/LogInUsername"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:background="@drawable/edittext"
+                android:drawableStart="@drawable/ic_baseline_email_24"
+                android:drawablePadding="7dp"
+                android:ems="12"
+                android:focusableInTouchMode="true"
+                android:hint="email"
+                android:inputType="textEmailAddress"
+                android:padding="7dp" />
+
+            <EditText
+                android:id="@+id/LogInPass"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/edittext"
+                android:drawableStart="@drawable/ic_baseline_vpn_key_24"
+                android:ems="12"
+                android:drawablePadding="7dp"
+                android:focusableInTouchMode="true"
+                android:hint="password"
+                android:inputType="textPassword"
+                android:padding="7dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:layout_marginTop="20dp"
+                android:onClick="forgot"
+                android:text="forgot password?" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="10dp"
+                android:background="#00FFFFFF"
+                android:elevation="10dp"
+                android:onClick="logIn"
+                android:textColor="@color/colorPrimaryDark"
+                android:layout_marginBottom="5dp"
+                android:text="Log in" />
+
+        </LinearLayout>
     </LinearLayout>
-
+</ScrollView>
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

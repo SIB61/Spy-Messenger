@@ -51,7 +51,7 @@ public class MyProfileActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate ( savedInstanceState );
         setContentView ( R.layout.activity_my_profile );
-        cover = findViewById ( R.id.MyProfileCover );
+      //  cover = findViewById ( R.id.MyProfileCover );
         userModel = new UserModel ( );
         profile = findViewById ( R.id.MyProfilePic );
         name = findViewById ( R.id.MyProfileName );
@@ -59,15 +59,46 @@ public class MyProfileActivity extends AppCompatActivity {
         school = findViewById ( R.id.MyProfileSchool );
         job = findViewById ( R.id.MyProfileJob );
         location = findViewById ( R.id.MyProfileLoc );
-
-
         firebaseUser = FirebaseAuth.getInstance ( ).getCurrentUser ( );
-        documentReference = FirebaseFirestore.getInstance ( ).document ( "Users/" + firebaseUser.getUid ( ) );
+        documentReference = FirebaseFirestore.getInstance ( ).document ( "UserInfo/" + firebaseUser.getUid ( ) );
         storageReference = FirebaseStorage.getInstance ( ).getReference ( ).child ( "ProfilePic/" + firebaseUser.getUid ( ) + ".jpg" );
-        storageReference1 = FirebaseStorage.getInstance ( ).getReference ( ).child ( "CoverPic/" + firebaseUser.getUid ( ) + ".jpg" );
-
+        addListener ( );
 
     }
+
+    private void addListener() {
+        documentReference.addSnapshotListener ( this, new EventListener<DocumentSnapshot> ( ) {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                final String profileUrl = documentSnapshot.getString ( "profilePic" );
+                if ( profileUrl != null )
+                    Picasso.with ( getApplicationContext ( ) ).load ( profileUrl ).networkPolicy ( NetworkPolicy.OFFLINE )
+                            .into ( profile, new Callback ( ) {
+                                @Override
+                                public void onSuccess() {
+                                    Picasso.with ( getApplicationContext ( ) ).load ( profileUrl ).into ( profile );
+                                }
+
+                                @Override
+                                public void onError() {
+                                    Picasso.with ( getApplicationContext ( ) ).load ( profileUrl ).into ( profile );
+                                }
+                            } );
+                if ( documentSnapshot.getString ( "name" ) != null )
+                    name.setText ( documentSnapshot.getString ( "name" ) );
+                if ( documentSnapshot.getString ( "status" ) != null )
+                    status.setText ( documentSnapshot.getString ( "status" ) );
+                if ( documentSnapshot.getString ( "location" ) != null )
+                    location.setText ( documentSnapshot.getString ( "location" ) );
+                if ( documentSnapshot.getString ( "job" ) != null )
+                    job.setText ( documentSnapshot.getString ( "job" ) );
+                if ( documentSnapshot.getString ( "education" ) != null )
+                    school.setText ( documentSnapshot.getString ( "education" ) );
+            }
+        } );
+
+    }
+
 
     public void showProgressDialog(String title, String message, int icon) {
         progressDialog = new ProgressDialog ( this );
@@ -82,25 +113,11 @@ public class MyProfileActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart ( );
-        documentReference.addSnapshotListener ( this, new EventListener<DocumentSnapshot> ( ) {
+      /*  documentReference.addSnapshotListener ( this, new EventListener<DocumentSnapshot> ( ) {
             @Override
             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
-
-                final String coverUrl = documentSnapshot.getString ( "coverPic" );
                 final String profileUrl = documentSnapshot.getString ( "profilePic" );
-
-                Picasso.with ( getApplicationContext ( ) ).load ( coverUrl ).networkPolicy ( NetworkPolicy.OFFLINE )
-                        .into ( cover, new Callback ( ) {
-                            @Override
-                            public void onSuccess() {
-                                Picasso.with ( getApplicationContext ( ) ).load ( coverUrl ).into ( cover );
-                            }
-
-                            @Override
-                            public void onError() {
-                                Picasso.with ( getApplicationContext ( ) ).load ( coverUrl ).into ( cover );
-                            }
-                        } );
+                if(profileUrl!=null)
                 Picasso.with ( getApplicationContext ( ) ).load ( profileUrl ).networkPolicy ( NetworkPolicy.OFFLINE )
                         .into ( profile, new Callback ( ) {
                             @Override
@@ -113,15 +130,18 @@ public class MyProfileActivity extends AppCompatActivity {
                                 Picasso.with ( getApplicationContext ( ) ).load ( profileUrl ).into ( profile );
                             }
                         } );
+                if(documentSnapshot.getString ( "name" )!=null)
                 name.setText ( documentSnapshot.getString ( "name" ) );
+                if(documentSnapshot.getString ( "status" )!=null)
                 status.setText ( documentSnapshot.getString ( "status" ) );
+                if(documentSnapshot.getString ( "location" )!=null)
                 location.setText ( documentSnapshot.getString ( "location" ) );
+                if(documentSnapshot.getString ( "job" )!=null)
                 job.setText ( documentSnapshot.getString ( "job" ) );
+                if(documentSnapshot.getString ( "education" )!=null)
                 school.setText ( documentSnapshot.getString ( "education" ) );
-
-
             }
-        } );
+        } );*/
     }
 
     @Override
@@ -183,20 +203,20 @@ public class MyProfileActivity extends AppCompatActivity {
 
     }
 
-    public void setCover(View view) {
+   /* public void setCover(View view) {
         Intent intent = CropImage.activity ( )
                 .setGuidelines ( CropImageView.Guidelines.ON )
                 .setAspectRatio ( 16, 9 )
                 .setFixAspectRatio ( true )
                 .getIntent ( this );
-        startActivityForResult ( intent, PICK_COVER );
+        startActivityForResult ( intent, PICK_COVER );*/
 
-    }
+    //}
 
     public void setStatus(View view) {
         final AlertDialog.Builder builder = new AlertDialog.Builder ( this );
         final View view1 = LayoutInflater.from ( this ).inflate ( R.layout.edit_text, null );
-        builder.setView ( view1 ).setTitle ( "Enter Your favourite quote" )
+        builder.setView ( view1 ).setTitle ( "set Your favourite quote" )
                 .setIcon ( R.drawable.ic_baseline_title_24 )
                 .setMessage ( "length should be at least 3 and at most 200" )
                 .setCancelable ( false )
