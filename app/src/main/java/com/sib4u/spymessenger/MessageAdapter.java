@@ -10,13 +10,14 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.Timestamp;
+import com.google.firebase.auth.FirebaseAuth;
+
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -27,11 +28,11 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     public int FRIEND_MESSAGE = 2;
     private MessageModel messageModel = new MessageModel ( );
     private Context ctx;
-    private List<Map<String, Object>> messageMaps;
+    private List<MessageModel> messageModels;
 
-    public MessageAdapter(Context ctx, List<Map<String, Object>> messageMaps) {
+    public MessageAdapter(Context ctx, List<MessageModel> messageModels) {
         this.ctx = ctx;
-        this.messageMaps = messageMaps;
+        this.messageModels = messageModels;
     }
 
     @NonNull
@@ -48,9 +49,10 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        String message = (String) messageMaps.get ( position ).get ( "message" );
+        String message = (String) messageModels.get ( position ).getMessage ( );
         String DecryptedMessage = "failed";
-        Date timestamp = (Date) messageMaps.get ( position ).get ( "timestamp" );
+
+        Timestamp timestamp = (Timestamp) messageModels.get ( position ).getTimestamp ( );
 
         try {
             DecryptedMessage = new RSAAlgo ( ).Decrypt ( message, new SharedPref ( ctx ).getPrivateKey ( ) );
@@ -62,17 +64,15 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         if ( getItemViewType ( position ) == MY_MESSAGE ) {
             MyMessageViewHolder holder1 = (MyMessageViewHolder) holder;
             holder1.messageTextView.setText ( DecryptedMessage );
-
-
             if ( timestamp != null ) {
-                @SuppressLint("SimpleDateFormat") String time = new SimpleDateFormat ( "h:mm a" ).format ( timestamp );
+                @SuppressLint("SimpleDateFormat") String time = new SimpleDateFormat ( "h:mm a" ).format ( timestamp.toDate ( ) );
                 holder1.timeTextView.setText ( time );
             }
         } else {
             FriendMessageViewHolder holder1 = (FriendMessageViewHolder) holder;
             holder1.messageTextView.setText ( DecryptedMessage );
             if ( timestamp != null ) {
-                @SuppressLint("SimpleDateFormat") String time = new SimpleDateFormat ( "h:mm a" ).format ( timestamp );
+                @SuppressLint("SimpleDateFormat") String time = new SimpleDateFormat ( "h:mm a" ).format ( timestamp.toDate ( ) );
                 holder1.timeTextView.setText ( time );
             }
         }
@@ -80,17 +80,12 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     @Override
     public int getItemCount() {
-        return messageMaps.size ( );
+        return messageModels.size ( );
     }
 
     @Override
     public int getItemViewType(int position) {
-        long i = (long) messageMaps.get ( position ).get ( "type" );
-        if ( i == 1 ) {
-            return MY_MESSAGE;
-        } else {
-            return FRIEND_MESSAGE;
-        }
+        return messageModels.get ( position ).getFrom ( ).equals ( FirebaseAuth.getInstance ( ).getCurrentUser ( ).getUid ( ) ) ? MY_MESSAGE : FRIEND_MESSAGE;
     }
 
     public class MyMessageViewHolder extends RecyclerView.ViewHolder {

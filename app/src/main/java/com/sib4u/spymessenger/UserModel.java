@@ -1,11 +1,13 @@
 package com.sib4u.spymessenger;
 
-public class UserModel {
+import java.io.Serializable;
 
-    String userId, profilePic, name, status, education, job, location;
+public class UserModel implements Serializable {
+
+    String userId, profilePic, name, status, education, job, location, lastSeen, publicKey;
     boolean visibility;
 
-    public UserModel(String userId, String profilePic, String name, String status, String education, String job, String location, boolean visibility) {
+    public UserModel(String userId, String profilePic, String name, String status, String education, String job, String location, boolean visibility, String lastSeen, String publicKey) {
         this.userId = userId;
         this.profilePic = profilePic;
         this.name = name;
@@ -14,6 +16,27 @@ public class UserModel {
         this.job = job;
         this.location = location;
         this.visibility = visibility;
+        this.lastSeen = lastSeen;
+        this.publicKey = publicKey;
+    }
+
+    public UserModel() {
+    }
+
+    public String getPublicKey() {
+        return publicKey;
+    }
+
+    public void setPublicKey(String publicKey) {
+        this.publicKey = publicKey;
+    }
+
+    public String getLastSeen() {
+        return lastSeen;
+    }
+
+    public void setLastSeen(String lastSeen) {
+        this.lastSeen = lastSeen;
     }
 
     public boolean isVisibility() {
@@ -24,8 +47,7 @@ public class UserModel {
         this.visibility = visibility;
     }
 
-    public UserModel() {
-    }
+
 
     public String getUserId() {
         return userId;

@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class ViewModel extends androidx.lifecycle.ViewModel {
 
-    MutableLiveData<List<Map<String, Object>>> FriendsMaps;
+    public MutableLiveData<List<Map<String, Object>>> FriendsMaps;
 
     public MutableLiveData<List<Map<String, Object>>> getFriendsMaps() {
         if ( FriendsMaps == null ) {

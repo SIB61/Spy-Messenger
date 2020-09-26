@@ -1,67 +1,146 @@
 package com.sib4u.spymessenger;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import com.firebase.ui.firestore.FirestoreRecyclerAdapter;
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.NetworkPolicy;
+import com.squareup.picasso.Picasso;
+
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Map;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link ChatFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+
+import de.hdodenhof.circleimageview.CircleImageView;
+
+
 public class ChatFragment extends Fragment {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
     public ChatFragment() {
         // Required empty public constructor
     }
 
-    // TODO: Rename and change types and number of parameters
-    public static ChatFragment newInstance(String param1, String param2) {
-        ChatFragment fragment = new ChatFragment ( );
-        Bundle args = new Bundle ( );
-        List<Map<String, Object>> maps = new ArrayList<> ( );
-        Map<String, Object> map = new HashMap<> ( );
-        map.put ( "1", param1 );
-        map.put ( "2", param2 );
-        maps.add ( map );
-        List<List<String>> mapsd = new ArrayList<> ( );
+    private RecyclerView recyclerView;
+    //Setting Up Adapter
+    // setting up recycler view adapter;
+    private Query query = FirebaseFirestore.getInstance ( )
+            .collection ( "Chats/Info/" + FirebaseAuth.getInstance ( ).getCurrentUser ( ).getUid ( ) )
+            .orderBy ( "timestamp" );
+    private FirestoreRecyclerOptions<ChatListModel> options = new FirestoreRecyclerOptions.Builder<ChatListModel> ( )
+            .setQuery ( query, ChatListModel.class ).build ( );
+    private FirestoreRecyclerAdapter<ChatListModel, MessageHolder> adapter = new FirestoreRecyclerAdapter<ChatListModel, MessageHolder> ( options ) {
+        @Override
+        protected void onBindViewHolder(@NonNull MessageHolder holder, int position, @NonNull ChatListModel model) {
+            FirebaseFirestore.getInstance ( ).document ( "UserInfo/" + model.getUserId ( ) )
+                    .get ( ).addOnCompleteListener ( new OnCompleteListener<DocumentSnapshot> ( ) {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if ( task.isSuccessful ( ) ) {
+                        Map<String, Object> map = task.getResult ( ).getData ( );
+                        if ( map != null ) {
+                            holder.textView.setText ( (CharSequence) map.get ( "name" ) );
+                            try {
+                                holder.lastMsg.setText ( new RSAAlgo ( ).Decrypt ( model.getLastMessage ( ),
+                                        new SharedPref ( getContext ( ) ).getPrivateKey ( ) ) );
+                            } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException | InvalidKeySpecException e) {
+                                e.printStackTrace ( );
+                            }
+                            Picasso.get ( ).load ( (String) map.get ( "profilePic" ) ).networkPolicy ( NetworkPolicy.OFFLINE ).
+                                    placeholder ( R.drawable.ic_default_image ).into ( holder.imageView,
+                                    new Callback ( ) {
+                                        @Override
+                                        public void onSuccess() {
+                                            // Picasso.with ( ctx ).load ( pp ).error ( R.drawable.ic_baseline_account_circle_24 ).into ( holder.imageView );
+                                        }
 
-        args.putString ( ARG_PARAM1, param1 );
-        args.putString ( ARG_PARAM2, param2 );
-        fragment.setArguments ( args );
-        return fragment;
-    }
+                                        @Override
+                                        public void onError(Exception e) {
+                                            Picasso.get ( ).load ( (String) map.get ( "profilePic" ) ).
+                                                    placeholder ( R.drawable.ic_default_image )
+                                                    .error ( R.drawable.ic_default_image ).into ( holder.imageView );
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate ( savedInstanceState );
-        if ( getArguments ( ) != null ) {
-            mParam1 = getArguments ( ).getString ( ARG_PARAM1 );
-            mParam2 = getArguments ( ).getString ( ARG_PARAM2 );
+                                        }
+
+                                    } );
+                        }
+                    }
+                }
+            } );
+
         }
-    }
+
+        @NonNull
+        @Override
+        public MessageHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View v = LayoutInflater.from ( getContext ( ) ).inflate ( R.layout.chat_list, parent, false );
+            return new MessageHolder ( v );
+        }
+    };
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate ( R.layout.fragment_chat, container, false );
+        View v = inflater.inflate ( R.layout.fragment_chat, container, false );
+        recyclerView = v.findViewById ( R.id.CFRecyclerView );
+        recyclerView.setAdapter ( adapter );
+
+        return v;
     }
+
+    @Override
+    public void onStart() {
+        super.onStart ( );
+        adapter.startListening ( );
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop ( );
+        adapter.stopListening ( );
+    }
+
+    private class MessageHolder extends RecyclerView.ViewHolder {
+        CircleImageView imageView;
+        TextView textView;
+        TextView lastMsg;
+
+        public MessageHolder(@NonNull View itemView) {
+            super ( itemView );
+            imageView = itemView.findViewById ( R.id.CFImage );
+            textView = itemView.findViewById ( R.id.CFName );
+            lastMsg = itemView.findViewById ( R.id.CFLastMessage );
+            Log.d ( "jam", "ConnectionHolder: " );
+            itemView.setOnClickListener ( new View.OnClickListener ( ) {
+                @Override
+                public void onClick(View view) {
+                    startActivity ( new Intent ( getActivity ( ), ChatActivity.class )
+                            .putExtra ( "ID", adapter.getItem ( getAdapterPosition ( ) ).getUserId ( ) ) );
+                }
+            } );
+        }
+    }
+
+
 }

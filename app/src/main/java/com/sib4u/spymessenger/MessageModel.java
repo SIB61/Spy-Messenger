@@ -1,11 +1,11 @@
 package com.sib4u.spymessenger;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.google.firebase.Timestamp;
 
-public class MessageModel extends AppCompatActivity {
-    int type;
+import java.io.Serializable;
+
+public class MessageModel implements Serializable {
+    private String from;
     private String message;
     private Timestamp timestamp;
 
@@ -13,27 +13,19 @@ public class MessageModel extends AppCompatActivity {
 
     }
 
-    public MessageModel(String message, Timestamp timestamp, int type) {
+    public MessageModel(String from, String message, Timestamp timestamp) {
+        this.from = from;
         this.message = message;
         this.timestamp = timestamp;
-        this.type = type;
     }
 
-    public int getType() {
-        return type;
+
+    public String getFrom() {
+        return from;
     }
 
-    public void setType(int type) {
-        this.type = type;
-    }
-
-    @Override
-    public String toString() {
-        return "MessageModel{" +
-                "message='" + message + '\'' +
-                ", timestamp=" + timestamp +
-                ", type=" + type +
-                '}';
+    public void setFrom(String from) {
+        this.from = from;
     }
 
     public String getMessage() {

@@ -6,7 +6,8 @@
     tools:context=".LoginActivity">
 <ScrollView
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:layout_above="@+id/sad">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -85,12 +86,14 @@
         </LinearLayout>
     </LinearLayout>
 </ScrollView>
+
     <LinearLayout
+        android:id="@+id/sad"
+        android:layout_centerHorizontal="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="15dp">
+        android:padding="10dp">
 
         <TextView
             android:layout_width="wrap_content"

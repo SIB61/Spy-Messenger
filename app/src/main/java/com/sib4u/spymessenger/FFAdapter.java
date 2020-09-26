@@ -38,7 +38,8 @@ public class FFAdapter extends RecyclerView.Adapter<FFAdapter.FFViewHolder> {
     public void onBindViewHolder(@NonNull FFViewHolder holder, int position) {
         String pp = (String) maps.get ( position ).get ( "profilePic" );
         if ( pp != null ) {
-            Picasso.with ( ctx ).load ( pp ).networkPolicy ( NetworkPolicy.OFFLINE ).into ( holder.imageView,
+            Picasso.get ( ).load ( pp ).networkPolicy ( NetworkPolicy.OFFLINE ).
+                    placeholder ( R.drawable.ic_default_image ).into ( holder.imageView,
                     new Callback ( ) {
                         @Override
                         public void onSuccess() {
@@ -46,12 +47,17 @@ public class FFAdapter extends RecyclerView.Adapter<FFAdapter.FFViewHolder> {
                         }
 
                         @Override
-                        public void onError() {
-                            Picasso.with ( ctx ).load ( pp ).error ( R.drawable.ic_baseline_account_circle_24 ).into ( holder.imageView );
+                        public void onError(Exception e) {
+                            Picasso.get ( ).load ( pp ).
+                                    placeholder ( R.drawable.ic_default_image )
+                                    .error ( R.drawable.ic_default_image ).into ( holder.imageView );
+
                         }
+
                     } );
         }
         holder.textView.setText ( (CharSequence) maps.get ( position ).get ( "name" ) );
+
     }
 
     @Override

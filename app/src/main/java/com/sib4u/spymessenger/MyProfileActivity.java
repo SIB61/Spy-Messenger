@@ -1,5 +1,6 @@
 package com.sib4u.spymessenger;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -19,6 +20,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
@@ -35,7 +37,13 @@ import com.squareup.picasso.Picasso;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+
 import javax.annotation.Nullable;
+
+import id.zelory.compressor.Compressor;
 
 public class MyProfileActivity extends AppCompatActivity {
     final int PICK_PROFILE = 1, PICK_COVER = 2;
@@ -62,7 +70,6 @@ public class MyProfileActivity extends AppCompatActivity {
         firebaseUser = FirebaseAuth.getInstance ( ).getCurrentUser ( );
         documentReference = FirebaseFirestore.getInstance ( ).document ( "UserInfo/" + firebaseUser.getUid ( ) );
         storageReference = FirebaseStorage.getInstance ( ).getReference ( ).child ( "ProfilePic/" + firebaseUser.getUid ( ) + ".jpg" );
-        addListener ( );
 
     }
 
@@ -70,18 +77,23 @@ public class MyProfileActivity extends AppCompatActivity {
         documentReference.addSnapshotListener ( this, new EventListener<DocumentSnapshot> ( ) {
             @Override
             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
-                final String profileUrl = documentSnapshot.getString ( "profilePic" );
+                String profileUrl = documentSnapshot.getString ( "profilePic" );
                 if ( profileUrl != null )
-                    Picasso.with ( getApplicationContext ( ) ).load ( profileUrl ).networkPolicy ( NetworkPolicy.OFFLINE )
+                    Picasso.get ( ).load ( profileUrl ).networkPolicy ( NetworkPolicy.OFFLINE )
+                            .placeholder ( R.drawable.ic_default_image )
                             .into ( profile, new Callback ( ) {
                                 @Override
                                 public void onSuccess() {
-                                    Picasso.with ( getApplicationContext ( ) ).load ( profileUrl ).into ( profile );
+
                                 }
 
                                 @Override
-                                public void onError() {
-                                    Picasso.with ( getApplicationContext ( ) ).load ( profileUrl ).into ( profile );
+                                public void onError(Exception e) {
+                                    Picasso.get ( ).load ( profileUrl )
+                                            .placeholder ( R.drawable.ic_default_image )
+                                            .error ( R.drawable.ic_default_image )
+                                            .into ( profile );
+
                                 }
                             } );
                 if ( documentSnapshot.getString ( "name" ) != null )
@@ -113,40 +125,14 @@ public class MyProfileActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart ( );
-      /*  documentReference.addSnapshotListener ( this, new EventListener<DocumentSnapshot> ( ) {
-            @Override
-            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
-                final String profileUrl = documentSnapshot.getString ( "profilePic" );
-                if(profileUrl!=null)
-                Picasso.with ( getApplicationContext ( ) ).load ( profileUrl ).networkPolicy ( NetworkPolicy.OFFLINE )
-                        .into ( profile, new Callback ( ) {
-                            @Override
-                            public void onSuccess() {
-                                Picasso.with ( getApplicationContext ( ) ).load ( profileUrl ).into ( profile );
-                            }
-
-                            @Override
-                            public void onError() {
-                                Picasso.with ( getApplicationContext ( ) ).load ( profileUrl ).into ( profile );
-                            }
-                        } );
-                if(documentSnapshot.getString ( "name" )!=null)
-                name.setText ( documentSnapshot.getString ( "name" ) );
-                if(documentSnapshot.getString ( "status" )!=null)
-                status.setText ( documentSnapshot.getString ( "status" ) );
-                if(documentSnapshot.getString ( "location" )!=null)
-                location.setText ( documentSnapshot.getString ( "location" ) );
-                if(documentSnapshot.getString ( "job" )!=null)
-                job.setText ( documentSnapshot.getString ( "job" ) );
-                if(documentSnapshot.getString ( "education" )!=null)
-                school.setText ( documentSnapshot.getString ( "education" ) );
-            }
-        } );*/
+        setOnline ( );
+        addListener ( );
     }
 
     @Override
     protected void onStop() {
         super.onStop ( );
+        setLastSeen ( );
     }
 
     @Override
@@ -189,12 +175,26 @@ public class MyProfileActivity extends AppCompatActivity {
                     return  true;
                 }
             }; */
+  private void setLastSeen() {
+      @SuppressLint("SimpleDateFormat") String time = new SimpleDateFormat ( "d MMM yyyy, h:mm a" ).format ( Timestamp.now ( ).toDate ( ) );
+      FirebaseFirestore.getInstance ( ).document ( "UserInfo/" + FirebaseAuth.getInstance ( ).getCurrentUser ( ).getUid ( ) )
+              .update ( "lastSeen", "last seen " + time );
+  }
+
+    private void setOnline() {
+        FirebaseFirestore.getInstance ( ).document ( "UserInfo/" + FirebaseAuth.getInstance ( ).getCurrentUser ( ).getUid ( ) )
+                .update ( "lastSeen", "online" );
+    }
 
 
     public void setProfile(View v) {
 
 
         Intent intent = CropImage.activity ( )
+                .setCropShape ( CropImageView.CropShape.OVAL )
+                .setAllowFlipping ( true )
+                .setAllowRotation ( true )
+                .setActivityTitle ( "set profile" )
                 .setGuidelines ( CropImageView.Guidelines.ON )
                 .setAspectRatio ( 1, 1 )
                 .setFixAspectRatio ( true )
@@ -440,9 +440,19 @@ public class MyProfileActivity extends AppCompatActivity {
             showProgressDialog ( "Uploading Profile", "Please wait while uploading!", R.drawable.ic_baseline_cloud_upload_24 );
             CropImage.ActivityResult result = CropImage.getActivityResult ( data );
             if ( resultCode == RESULT_OK ) {
-
+                File finalImageFile = null;
                 Uri imageUri = result.getUri ( );
-                storageReference.putFile ( imageUri ).addOnCompleteListener ( new OnCompleteListener<UploadTask.TaskSnapshot> ( ) {
+                File imageFile = new File ( imageUri.getPath ( ) );
+                try {
+                    finalImageFile = new Compressor ( this )
+                            .setMaxHeight ( 200 )
+                            .setMaxWidth ( 200 )
+                            .setQuality ( 75 )
+                            .compressToFile ( imageFile );
+                } catch (IOException e) {
+                    e.printStackTrace ( );
+                }
+                storageReference.putFile ( Uri.fromFile ( finalImageFile ) ).addOnCompleteListener ( new OnCompleteListener<UploadTask.TaskSnapshot> ( ) {
                     @Override
                     public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
                         if ( task.isSuccessful ( ) ) {

@@ -1,42 +1,40 @@
 package com.sib4u.spymessenger;
 
-import android.os.Bundle;
+import android.os.Build;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 
-import java.util.List;
-import java.util.Map;
-
 public class SectionPagerAdapter extends FragmentPagerAdapter {
-    Bundle bundle;
-    List<Map<String, Object>> maps;
-    List<Map<String, Object>> maps2;
 
-    public SectionPagerAdapter(@NonNull FragmentManager fm, List<Map<String, Object>> maps, List<Map<String, Object>> maps2) {
+    public SectionPagerAdapter(@NonNull FragmentManager fm) {
         super ( fm );
-        this.maps = maps;
-        this.maps2 = maps2;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @NonNull
     @Override
     public Fragment getItem(int position) {
         switch (position) {
             case 0:
-                return new ChatFragment ( );
-            case 1:
-
                 return new RequestFragment ( );
+            case 1:
+                return new ChatFragment ( );
             case 2:
-                FriendsFragment friendsFragment = FriendsFragment.newInstance ( maps );
-                return friendsFragment;
+                return new FriendsFragment ( );
             default:
                 return null;
         }
+    }
+
+    @Override
+    public void setPrimaryItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
+        super.setPrimaryItem ( container, position, object );
     }
 
     @Override
@@ -49,9 +47,9 @@ public class SectionPagerAdapter extends FragmentPagerAdapter {
     public CharSequence getPageTitle(int position) {
         switch (position) {
             case 0:
-                return "chats";
-            case 1:
                 return "requests";
+            case 1:
+                return "chats";
             case 2:
                 return "friends";
             default:

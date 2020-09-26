@@ -1,5 +1,6 @@
 package com.sib4u.spymessenger;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -21,6 +22,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
@@ -29,49 +31,49 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import java.io.Serializable;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import javax.annotation.Nullable;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
 public class MainActivity extends AppCompatActivity {
+
+
+    private final String MY_PREFS_NAME = "My_prefs";
+    private final String MyID = FirebaseAuth.getInstance ( ).getCurrentUser ( ).getUid ( );
+    private final DocumentReference documentReference = FirebaseFirestore.getInstance ( ).document ( "UserInfo/" + MyID );
     ViewPager viewPager;
     TabLayout tabLayout;
     SectionPagerAdapter adapter;
     Toolbar toolbar;
     FloatingActionButton edit;
-    public String privateKeyString;
-    public String publicKeyString;
-    public String MY_PREFS_NAME = "My_prefs";
     UserModel userModel;
-    String MyID = FirebaseAuth.getInstance ( ).getCurrentUser ( ).getUid ( );
-    DocumentReference documentReference = FirebaseFirestore.getInstance ( ).document ( "UserInfo/" + MyID );
     KeyPairGenerator kpg;
     KeyPair kp;
     PublicKey publicKey;
     PrivateKey privateKey;
     SharedPref sharedPref;
-    CollectionReference collectionReference;
-    private List<Map<String, Object>> list = new ArrayList<> ( );
-    private List<Map<String, Object>> list2 = new ArrayList<> ( );
-    //  ViewModel viewModel;
+    CollectionReference collectionReference = FirebaseFirestore.getInstance ( ).collection ( "Connections/" +
+            FirebaseAuth.getInstance ( ).getCurrentUser ( ).getUid ( ) + "/MyConnections" );
 
+    ListenerRegistration listenerRegistration;
+    FFAdapter adapter2;
     Toolbar.OnMenuItemClickListener menuItemClickListener = new Toolbar.OnMenuItemClickListener ( ) {
         @Override
         public boolean onMenuItemClick(final MenuItem menuItem) {
@@ -99,89 +101,30 @@ public class MainActivity extends AppCompatActivity {
                         }
                     } );
             }
-
-
             return true;
         }
     };
+    private String privateKeyString;
+    private String publicKeyString;
+    private List<Map<String, Object>> list;
+    //  ViewModel viewModel;
+    private List<Map<String, Object>> list2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate ( savedInstanceState );
         setContentView ( R.layout.activity_main );
+        list = new ArrayList<> ( );
+        list2 = new ArrayList<> ( );
         sharedPref = new SharedPref ( getApplicationContext ( ) );
         //viewModel= ViewModelProviders.of ( this ).get ( ViewModel.class );
         toolbar = findViewById ( R.id.toolbar );
         toolbar.setOnMenuItemClickListener ( menuItemClickListener );
         viewPager = findViewById ( R.id.viewPager );
-      /*  viewModel.getFriendsMaps ().observe ( this, new Observer<List<Map<String, Object>>> ( ) {
-            @Override
-            public void onChanged(List<Map<String, Object>> maps) {
-                list=maps;
-            }
-        } );*/
-        tabLayout = findViewById ( R.id.tab );
-        adapter = new SectionPagerAdapter ( getSupportFragmentManager ( ), list, list2 );
+        adapter = new SectionPagerAdapter ( getSupportFragmentManager ( ) );
         viewPager.setAdapter ( adapter );
-        collectionReference = FirebaseFirestore.getInstance ( ).collection ( "Connections/" +
-                FirebaseAuth.getInstance ( ).getCurrentUser ( ).getUid ( ) + "/MyConnections" );
-        collectionReference.whereEqualTo ( "type", "friends" ).addSnapshotListener ( this, new EventListener<QuerySnapshot> ( ) {
-            @Override
-            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
-                if ( queryDocumentSnapshots != null )
-                    for (DocumentChange dc : queryDocumentSnapshots.getDocumentChanges ( )) {
-                        if ( dc.getType ( ) == DocumentChange.Type.ADDED ) {
-                            String INFO_ID = dc.getDocument ( ).getId ( );
-                            DocumentReference DC = FirebaseFirestore.getInstance ( ).document ( "UserInfo/" + INFO_ID );
-                            DC.get ( ).addOnCompleteListener ( new OnCompleteListener<DocumentSnapshot> ( ) {
-                                @Override
-                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                    if ( task.isSuccessful ( ) ) {
-                                        Map<String, Object> map = task.getResult ( ).getData ( );
-                                        if ( map != null ) {
-                                            list.add ( map );
-                                            // viewModel.setFriendsMaps ( map );
-                                            Log.d ( "find", "onComplete: " + map.toString ( ) );
-                                            adapter.notifyDataSetChanged ( );
-                                            // adapter = new SectionPagerAdapter ( getSupportFragmentManager ( ),list );
-                                            //  viewPager.setAdapter ( adapter );
-                                        }
-                                    }
-                                }
-                            } );
-                        }
-                    }
-            }
-        } );
-        collectionReference.whereEqualTo ( "type", "toMe" ).addSnapshotListener ( this, new EventListener<QuerySnapshot> ( ) {
-            @Override
-            public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
-                if ( queryDocumentSnapshots != null )
-                    for (DocumentChange dc : queryDocumentSnapshots.getDocumentChanges ( )) {
-                        if ( dc.getType ( ) == DocumentChange.Type.ADDED ) {
-                            String INFO_ID = dc.getDocument ( ).getId ( );
-                            DocumentReference DC = FirebaseFirestore.getInstance ( ).document ( "UserInfo/" + INFO_ID );
-                            DC.get ( ).addOnCompleteListener ( new OnCompleteListener<DocumentSnapshot> ( ) {
-                                @Override
-                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                    if ( task.isSuccessful ( ) ) {
-                                        Map<String, Object> map = task.getResult ( ).getData ( );
-                                        if ( map != null ) {
-                                            list2.add ( map );
-                                            // viewModel.setFriendsMaps ( map );
-                                            Log.d ( "find", "onComplete: " + map.toString ( ) );
-                                            adapter.notifyDataSetChanged ( );
-                                            // adapter = new SectionPagerAdapter ( getSupportFragmentManager ( ),list );
-                                            //  viewPager.setAdapter ( adapter );
-                                        }
-                                    }
-                                }
-                            } );
-                        }
-                    }
-            }
-        } );
-
+        viewPager.setCurrentItem ( 1, true );
+        tabLayout = findViewById ( R.id.tab );
         tabLayout.setupWithViewPager ( viewPager );
         try {
             genKeys ( );
@@ -190,13 +133,67 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void setLastSeen() {
+        @SuppressLint("SimpleDateFormat") String time = new SimpleDateFormat ( "d MMM yyyy, h:mm a" ).format ( Timestamp.now ( ).toDate ( ) );
+        FirebaseFirestore.getInstance ( ).document ( "UserInfo/" + FirebaseAuth.getInstance ( ).getCurrentUser ( ).getUid ( ) )
+                .update ( "lastSeen", "last seen " + time );
+    }
+
+    private void setOnline() {
+        FirebaseFirestore.getInstance ( ).document ( "UserInfo/" + FirebaseAuth.getInstance ( ).getCurrentUser ( ).getUid ( ) )
+                .update ( "lastSeen", "online" );
+    }
+
+
+    private void addListener() {
+        listenerRegistration = collectionReference.addSnapshotListener ( new EventListener<QuerySnapshot> ( ) {
+            @Override
+            public void onEvent(@androidx.annotation.Nullable QuerySnapshot value, @androidx.annotation.Nullable FirebaseFirestoreException error) {
+                if ( value != null ) {
+                    for (DocumentChange DC : value.getDocumentChanges ( )) {
+                        Map<String, Object> DCMap = DC.getDocument ( ).getData ( );
+                        DocumentReference DR = FirebaseFirestore.getInstance ( ).document ( "UserInfo/" + DC.getDocument ( ).getId ( ) );
+                        DR.get ( ).addOnCompleteListener ( new OnCompleteListener<DocumentSnapshot> ( ) {
+                            @Override
+                            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                if ( task.isSuccessful ( ) ) {
+                                    // Log.d ( "fuck", "onComplete: " + task.getResult ( ).getData ( ).toString ( ) );
+                                    if ( task.getResult ( ) != null )
+                                        if ( task.getResult ( ).getData ( ) != null ) {
+                                            Map<String, Object> DRMap = Objects.requireNonNull ( task.getResult ( ) ).getData ( );
+                                            if ( DRMap != null ) {
+                                                DRMap.put ( "type", DCMap.get ( "type" ) );
+                                                if ( DC.getType ( ) == DocumentChange.Type.ADDED ) {
+                                                    list.add ( DRMap );
+                                                } else if ( DC.getType ( ) == DocumentChange.Type.MODIFIED ) {
+                                                    if ( DC.getOldIndex ( ) == DC.getNewIndex ( ) ) {
+                                                        list.set ( DC.getOldIndex ( ), DRMap );
+                                                    } else {
+                                                        list.remove ( DC.getOldIndex ( ) );
+                                                        list.add ( DRMap );
+                                                    }
+                                                } else if ( DC.getType ( ) == DocumentChange.Type.REMOVED ) {
+                                                    list.remove ( DC.getOldIndex ( ) );
+                                                }
+
+                                            }
+
+                                        }
+                                }
+                            }
+                        } );
+                    }
+                }
+            }
+        } );
+    }
+
     private void SearchUser(String query) {
         final ProgressDialog progressDialog = new ProgressDialog ( this );
         progressDialog.setTitle ( "Searching..." );
         progressDialog.create ( );
         progressDialog.setCanceledOnTouchOutside ( false );
         progressDialog.show ( );
-
         CollectionReference collectionReference = FirebaseFirestore.getInstance ( ).collection ( "UserInfo" );
         collectionReference.whereEqualTo ( "name", query )
                 .whereEqualTo ( "visibility", true )
@@ -210,14 +207,10 @@ public class MainActivity extends AppCompatActivity {
                             //  Toast.makeText ( getApplicationContext ( ), ID, Toast.LENGTH_SHORT ).show ( );
                         }
                         if ( map.containsKey ( "userId" ) ) {
-                            Intent intent;
-                            if ( Objects.requireNonNull ( map.get ( "userId" ) ).equals ( Objects.requireNonNull ( FirebaseAuth.getInstance ( ).getCurrentUser ( ) ).getUid ( ) ) ) {
-                                intent = new Intent ( getApplicationContext ( ), MyProfileActivity.class );
-                            } else {
-                                intent = new Intent ( getApplicationContext ( ), FriendProfileActivity.class );
-                                intent.putExtra ( "map", (Serializable) map );
-                            }
-                            startActivity ( intent );
+                            if ( !map.get ( "userId" ).equals ( FirebaseAuth.getInstance ( ).getCurrentUser ( ).getUid ( ) ) )
+                                startActivity ( new Intent ( getApplicationContext ( ), FriendProfileActivity.class ).putExtra ( "ID", (String) map.get ( "userId" ) ) );
+                            else
+                                startActivity ( new Intent ( getApplicationContext ( ), MyProfileActivity.class ) );
                             progressDialog.dismiss ( );
                         } else {
                             Toast.makeText ( getApplicationContext ( ), "account doesn't exists", Toast.LENGTH_SHORT ).show ( );
@@ -271,7 +264,35 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume ( );
+    }
+
+    @Override
     protected void onStart() {
         super.onStart ( );
+        setOnline ( );
+        Log.d ( "fuck", "onStart: " + list.toString ( ) );
     }
+
+    @Override
+    protected void onPause() {
+        super.onPause ( );
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop ( );
+        setLastSeen ( );
+    }
+
+
+    @Override
+    protected void onDestroy() {
+
+        super.onDestroy ( );
+        //  listenerRegistration.remove ( );
+    }
+
+
 }

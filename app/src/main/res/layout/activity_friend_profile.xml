@@ -7,7 +7,8 @@
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_above="@+id/l">
 
         <LinearLayout
             android:id="@+id/e"
@@ -21,7 +22,7 @@
                 android:layout_height="100dp"
                 android:layout_gravity="center"
                 android:layout_marginVertical="30dp"
-                android:src="@drawable/ic_baseline_account_circle_24" />
+                android:src="@drawable/ic_default_image" />
 
 
             <TextView
@@ -98,35 +99,45 @@
                     android:text="not provided"
                     android:textColor="#000" />
             </LinearLayout>
+
+            <Button
+                android:id="@+id/send_req"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="10dp"
+                android:layout_marginVertical="10dp"
+                android:background="@drawable/triangle"
+                android:elevation="10dp"
+                android:padding="5dp"
+                android:text="SEND REQUEST"
+                android:textColor="@color/colorPrimaryDark" />
+
+            <Button
+                android:id="@+id/send_msg"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="10dp"
+                android:layout_marginVertical="10dp"
+                android:background="@drawable/triangle"
+                android:elevation="10dp"
+                android:onClick="sendMsg"
+                android:padding="5dp"
+                android:text="SEND MESSAGE"
+                android:textColor="@color/colorPrimaryDark"
+                android:visibility="visible" />
         </LinearLayout>
     </ScrollView>
 
     <Button
-        android:id="@+id/send_msg"
-        android:layout_width="match_parent"
+        android:id="@+id/l"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@id/send_req"
-        android:layout_marginHorizontal="20dp"
-        android:layout_marginVertical="10dp"
-        android:background="@drawable/triangle"
-        android:elevation="10dp"
-        android:onClick="sendMsg"
-        android:padding="5dp"
-        android:text="SEND MESSAGE"
-        android:textColor="@color/colorPrimaryDark"
-        android:visibility="gone" />
-
-    <Button
-        android:id="@+id/send_req"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginHorizontal="20dp"
-        android:layout_marginVertical="10dp"
-        android:background="@drawable/triangle"
-        android:elevation="10dp"
-        android:padding="5dp"
-        android:text="SEND REQUEST"
+        android:background="#00FFFFFF"
+        android:onClick="back"
+        android:text="back"
         android:textColor="@color/colorPrimaryDark" />
+
 
 </RelativeLayout>

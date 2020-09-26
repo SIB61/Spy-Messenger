@@ -3,6 +3,7 @@ package com.sib4u.spymessenger;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -25,7 +26,7 @@ import com.squareup.picasso.Callback;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
-import java.io.Serializable;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,53 +38,50 @@ public class FriendProfileActivity extends AppCompatActivity {
     private static final String TAG = "TAG";
     String ID, NAME, PHOTO;
     String FriendPubKey;
-    String Type;
+    String Type = null;
     Button action;
     Button sendMsg;
     Timestamp timestamp;
-
     CircleImageView FPPic;
     TextView FPName, FPStatus, FPEducation, FPJob, FPLocation;
     FirebaseUser firebaseUser;
     Map<String, Object> map = new HashMap<> ( );
-
-
     DocumentReference UserConnectionRef, MyConnectionRef, UserInfoRef;
     public View.OnClickListener listener = new View.OnClickListener ( ) {
         @Override
         public void onClick(View view) {
+            ConnectionListModel model1 = new ConnectionListModel ( ID, null, Timestamp.now ( ) );
+            ConnectionListModel model2 = new ConnectionListModel ( firebaseUser.getUid ( ), null, Timestamp.now ( ) );
             Map<String, Object> map1 = new HashMap<> ( );
             final Map<String, Object> map2 = new HashMap<> ( );
             if ( Type == null ) {
-                map1.put ( "type", "toUser" );
-                map2.put ( "type", "toMe" );
+                model1.setType ( "toUser" );
+                model2.setType ( "toMe" );
             } else if ( Type.equals ( "toMe" ) ) {
-                map1.put ( "type", "friends" );
-                map2.put ( "type", "friends" );
+                model1.setType ( "friends" );
+                model2.setType ( "friends" );
             } else if ( Type.equals ( "toUser" ) || Type.equals ( "friends" ) ) {
-                map1.put ( "type", null );
-                map2.put ( "type", null );
+                model1.setType ( null );
+                model2.setType ( null );
             }
-            MyConnectionRef.set ( map1 ).addOnCompleteListener ( new OnCompleteListener<Void> ( ) {
+            MyConnectionRef.set ( model1 ).addOnCompleteListener ( new OnCompleteListener<Void> ( ) {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
                     if ( task.isSuccessful ( ) ) {
-                        UserConnectionRef.set ( map2 );
+                        UserConnectionRef.set ( model2 );
                     }
                 }
             } );
         }
     };
+    Map<String, Object> MyMap = new HashMap<> ( );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate ( savedInstanceState );
         setContentView ( R.layout.activity_friend_profile );
         //noinspection unchecked
-        map = (Map<String, Object>) getIntent ( ).getSerializableExtra ( "map" );
-        if ( map != null ) {
-            ID = (String) map.get ( "userId" );
-        }
+        ID = getIntent ( ).getStringExtra ( "ID" );
         action = findViewById ( R.id.send_req );
         action.setOnClickListener ( listener );
         sendMsg = findViewById ( R.id.send_msg );
@@ -91,98 +89,90 @@ public class FriendProfileActivity extends AppCompatActivity {
         UserConnectionRef = FirebaseFirestore.getInstance ( ).document ( "Connections/" +
                 ID + "/MyConnections/" + firebaseUser.getUid ( ) );
         MyConnectionRef = FirebaseFirestore.getInstance ( ).document ( "Connections/" + firebaseUser.getUid ( ) + "/MyConnections/" + ID );
+
         FPPic = findViewById ( R.id.FriendProfilePic );
         FPName = findViewById ( R.id.FriendProfileName );
         FPStatus = findViewById ( R.id.FriendProfileStatus );
         FPEducation = findViewById ( R.id.FriendProfileSchool );
         FPJob = findViewById ( R.id.FriendProfileJob );
         FPLocation = findViewById ( R.id.FriendProfileLoc );
-        MyConnectionRef.addSnapshotListener ( new EventListener<DocumentSnapshot> ( ) {
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop ( );
+        setLastSeen ( );
+    }
+
+    private void addListener() {
+        MyConnectionRef.addSnapshotListener ( this, new EventListener<DocumentSnapshot> ( ) {
             @Override
             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
                 if ( e == null ) {
-                    Type = documentSnapshot.getString ( "type" );
-                    setAction ( Type );
+                    ConnectionListModel model = null;
+                    if ( documentSnapshot != null ) {
+                        model = documentSnapshot.toObject ( ConnectionListModel.class );
+                    }
+                    if ( model != null ) {
+                        Type = model.getType ( );
+                        setAction ( Type );
+                    }
                 }
             }
         } );
-
-
-        setInfo ( );
     }
 
     private void setInfo() {
-        if ( map.get ( "name" ) != null ) {
-            FPName.setText ( (String) map.get ( "name" ) );
-        }
-        if ( map.get ( "status" ) != null ) {
-            FPStatus.setText ( (String) map.get ( "status" ) );
-        }
-        if ( map.get ( "education" ) != null ) {
-            FPEducation.setText ( (String) map.get ( "education" ) );
-        }
-        if ( map.get ( "job" ) != null ) {
-            FPJob.setText ( (String) map.get ( "job" ) );
-        }
-        if ( map.get ( "location" ) != null ) {
-            FPLocation.setText ( (String) map.get ( "location" ) );
-        }
-        PHOTO = (String) map.get ( "profilePic" );
-
-        if ( PHOTO != null )
-            Picasso.with ( getApplicationContext ( ) ).load ( PHOTO ).networkPolicy ( NetworkPolicy.OFFLINE )
-                    .into ( FPPic, new Callback ( ) {
-                        @Override
-                        public void onSuccess() {
-                            Picasso.with ( getApplicationContext ( ) ).load ( PHOTO )
-                                    .into ( FPPic );
+        FirebaseFirestore.getInstance ( ).document ( "UserInfo/" + ID )
+                .addSnapshotListener ( this, new EventListener<DocumentSnapshot> ( ) {
+                    @Override
+                    public void onEvent(@androidx.annotation.Nullable DocumentSnapshot value, @androidx.annotation.Nullable FirebaseFirestoreException error) {
+                        String profilePic = null;
+                        if ( value != null ) {
+                            map = value.getData ( );
+                            Log.d ( "dog", "onEvent: " + map.toString ( ) );
                         }
-
-                        @Override
-                        public void onError() {
-                            Picasso.with ( getApplicationContext ( ) ).load ( PHOTO )
-                                    .into ( FPPic );
+                        if ( map != null ) {
+                            FPName.setText ( (CharSequence) map.get ( "name" ) );
+                            FPStatus.setText ( (CharSequence) map.get ( "status" ) );
+                            FPEducation.setText ( (CharSequence) map.get ( "education" ) );
+                            FPJob.setText ( (CharSequence) map.get ( "job" ) );
+                            FPLocation.setText ( (CharSequence) map.get ( "location" ) );
+                            profilePic = (String) map.get ( "profilePic" );
                         }
-                    } );
+                        if ( profilePic != null ) {
+                            String finalProfilePic1 = profilePic;
+                            Picasso.get ( ).load ( finalProfilePic1 ).networkPolicy ( NetworkPolicy.OFFLINE )
+                                    .placeholder ( R.drawable.ic_default_image )
+                                    .into ( FPPic, new Callback ( ) {
+                                        @Override
+                                        public void onSuccess() {
+                                            Picasso.get ( ).load ( finalProfilePic1 )
+                                                    .placeholder ( R.drawable.ic_default_image )
+                                                    .error ( R.drawable.ic_default_image )
+                                                    .into ( FPPic );
+                                        }
 
+                                        @Override
+                                        public void onError(Exception e) {
+                                            Picasso.get ( ).load ( finalProfilePic1 )
+                                                    .placeholder ( R.drawable.ic_default_image )
+                                                    .error ( R.drawable.ic_default_image )
+                                                    .into ( FPPic );
+                                        }
 
+                                    } );
+                        }
+                    }
+                } );
     }
 
     @Override
     protected void onStart() {
         super.onStart ( );
-
-
-      /* UserInfoRef.addSnapshotListener ( new EventListener<DocumentSnapshot> ( ) {
-            @Override
-            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
-                if(e==null){
-                    NAME=documentSnapshot.getString ( "name" );
-                    PHOTO=documentSnapshot.getString ( "profilePic" );
-                    FPName.setText ( documentSnapshot.getString ( "name" ) );
-                    FriendPubKey=documentSnapshot.getString ( "publicKey" );
-                    FPEducation.setText ( documentSnapshot.getString ( "education" ) );
-                    FPJob.setText ( documentSnapshot.getString ( "job" ) );
-                    FPStatus.setText ( documentSnapshot.getString ( "status" ) );
-                    FPLocation.setText ( documentSnapshot.getString ( "location" ) );
-                    Picasso.with ( getApplicationContext () ).load ( PHOTO ).networkPolicy ( NetworkPolicy.OFFLINE )
-                            .into ( FPPic, new Callback ( ) {
-                                @Override
-                                public void onSuccess() {
-                                    Picasso.with ( getApplicationContext () ).load ( PHOTO )
-                                            .into ( FPPic);
-                                }
-
-                                @Override
-                                public void onError() {
-                                    Picasso.with ( getApplicationContext () ).load ( PHOTO )
-                                            .into ( FPPic);
-                                }
-                            } );
-                }
-            }
-        } );*/
-
+        setOnline ( );
+        setInfo ( );
+        addListener ( );
     }
 
     @SuppressLint("SetTextI18n")
@@ -212,7 +202,23 @@ public class FriendProfileActivity extends AppCompatActivity {
     }
 
     public void sendMsg(View view) {
-        startActivity ( new Intent ( this, ChatActivity.class ).putExtra ( "map", (Serializable) map ) );
+        startActivity ( new Intent ( this, ChatActivity.class ).putExtra ( "ID", ID ) );
         finish ( );
     }
+
+    private void setLastSeen() {
+        @SuppressLint("SimpleDateFormat") String time = new SimpleDateFormat ( "d MMM yyyy, h:mm a" ).format ( Timestamp.now ( ).toDate ( ) );
+        FirebaseFirestore.getInstance ( ).document ( "UserInfo/" + FirebaseAuth.getInstance ( ).getCurrentUser ( ).getUid ( ) )
+                .update ( "lastSeen", "last seen " + time );
+    }
+
+    private void setOnline() {
+        FirebaseFirestore.getInstance ( ).document ( "UserInfo/" + FirebaseAuth.getInstance ( ).getCurrentUser ( ).getUid ( ) )
+                .update ( "lastSeen", "online" );
+    }
+
+    public void back(View view) {
+        onBackPressed ( );
+    }
+
 }

@@ -1,22 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <item
-        android:id="@+id/app_bar_search"
-        android:icon="@drawable/ic_search_black_24dp"
-        android:title="Search"
-        app:actionViewClass="androidx.appcompat.widget.SearchView"
-        app:showAsAction="ifRoom|collapseActionView" />
-    <group android:checkableBehavior="single">
+    <group android:id="@+id/group1">
+        <item
+            android:id="@+id/app_bar_search"
+            android:icon="@drawable/ic_search_black_24dp"
+            android:title="Search"
+            app:actionViewClass="androidx.appcompat.widget.SearchView"
+            app:showAsAction="always|collapseActionView" />
         <item
             android:id="@+id/MyProfile"
             android:title="My Profile" />
         <item
-            android:id="@+id/all_users"
-            android:title="all users" />
-        <item
             android:id="@+id/GeneralSettings"
             android:title="General Settings" />
-        <item android:title="about" />
+        <item
+            android:id="@+id/requested"
+            android:title="Requested" />
+        <item
+            android:id="@+id/about"
+            android:title="about" />
+
     </group>
 </menu>
